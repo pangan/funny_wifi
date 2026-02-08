@@ -48,9 +48,13 @@ static String wifiPage() {
 <style>
   body { font-family: Arial, sans-serif; padding: 20px; text-align: center; }
   input[type=text], input[type=email] { width: 100%; padding: 12px 20px; margin: 8px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; font-size: 16px; }
+  input[type=text].error, input[type=email].error { border: 2px solid #f44336; }
   input[type=submit] { width: 100%; background-color: #4CAF50; color: white; padding: 14px 20px; margin: 8px 0; border: none; border-radius: 4px; cursor: pointer; }
   input[type=submit]:hover { background-color: #45a049; }
+  input[type=submit]:disabled { background-color: #cccccc; cursor: not-allowed; }
   .wifi-logo { width: 64px; height: 64px; fill: #4CAF50; margin-bottom: 20px; }
+  .error-message { color: #f44336; font-size: 14px; margin-top: -5px; margin-bottom: 10px; text-align: left; display: none; }
+  .error-message.show { display: block; }
 </style>
 </head>
 <body>
@@ -59,13 +63,68 @@ static String wifiPage() {
 </svg>
 <h2>Free WiFi</h2>
 <h1>Fill below form to connect:</h1>
-<form action="/submit" method="POST">
+<form id="wifiForm" action="/submit" method="POST" onsubmit="return validateForm()">
   <label for="email">Email</label>
-  <input type="text" id="email" name="email" placeholder="Your email..">
+  <input type="text" id="email" name="email" placeholder="Your email.." onchange="validateForm()" oninput="validateForm()">
+  <div id="emailError" class="error-message"></div>
   <label for="name">Name</label>
-  <input type="text" id="name" name="name" placeholder="Your name..">
-  <input type="submit" value="Submit">
+  <input type="text" id="name" name="name" placeholder="Your name.." onchange="validateForm()" oninput="validateForm()">
+  <div id="nameError" class="error-message"></div>
+  <input type="submit" id="submitBtn" value="Submit" disabled>
 </form>
+<script>
+  function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+  
+  function validateForm() {
+    const email = document.getElementById('email').value.trim();
+    const name = document.getElementById('name').value.trim();
+    const emailInput = document.getElementById('email');
+    const nameInput = document.getElementById('name');
+    const emailError = document.getElementById('emailError');
+    const nameError = document.getElementById('nameError');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    let isValid = true;
+    
+    // Validate email
+    if (email === '') {
+      emailError.textContent = 'Email is mandatory';
+      emailError.classList.add('show');
+      emailInput.classList.add('error');
+      isValid = false;
+    } else if (!isValidEmail(email)) {
+      emailError.textContent = 'Please enter a valid email address';
+      emailError.classList.add('show');
+      emailInput.classList.add('error');
+      isValid = false;
+    } else {
+      emailError.classList.remove('show');
+      emailInput.classList.remove('error');
+    }
+    
+    // Validate name
+    if (name === '') {
+      nameError.textContent = 'Name is mandatory';
+      nameError.classList.add('show');
+      nameInput.classList.add('error');
+      isValid = false;
+    } else {
+      nameError.classList.remove('show');
+      nameInput.classList.remove('error');
+    }
+    
+    // Enable/disable submit button
+    submitBtn.disabled = !isValid;
+    
+    return isValid;
+  }
+  
+  // Initial validation on page load
+  window.addEventListener('load', validateForm);
+</script>
 </body>
 </html>
 )rawliteral";
